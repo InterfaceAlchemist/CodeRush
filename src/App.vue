@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, onBeforeMount } from "vue";
 import { useTypingTest } from "./composables/useTypingTest";
 import AppHeader from "./components/AppHeader.vue";
 import ControlsBar from "./components/ControlsBar.vue";
@@ -63,6 +63,22 @@ function handleUseCustom({ text, language: customLang }) {
 function handleCancelCustom() {
   showCustomInput.value = false;
 }
+
+function handleGlobalKeydown(e) {
+  const isButtonFocused = e.target.tagname === "BUTTON";
+
+  if (showCustomInput.value && e.key === "Escape") {
+    handleCancelCustom();
+    return;
+  }
+
+  if (status.value === "finished" && e.key === "Enter" && !isButtonFocused) {
+    handleRestart();
+  }
+}
+
+onMounted(() => window.addEventListener("keydown", handleGlobalKeydown));
+onBeforeMount(() => window.removeEventListener("keydown", handleGlobalKeydown));
 </script>
 
 <template>

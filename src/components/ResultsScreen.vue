@@ -95,6 +95,12 @@ const chartPoints = computed(() => {
         </p>
       </div>
       <div class="rounded-lg border border-neutral-800 px-6 py-3 text-left">
+        <p class="text-sm text-neutral-400">Raw WPM:</p>
+        <p class="font-sora text-xl font-bold text-neutral-400">
+          {{ result.rawWpm }}
+        </p>
+      </div>
+      <div class="rounded-lg border border-neutral-800 px-6 py-3 text-left">
         <p class="text-sm text-neutral-400">Accuracy:</p>
         <p
           class="font-sora text-xl font-bold"

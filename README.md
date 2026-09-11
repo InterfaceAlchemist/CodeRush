@@ -18,9 +18,11 @@ Originally based on the [Frontend Mentor "Typing Speed Test" challenge](https://
 - **No-repeat randomization** — won't show you the same snippet twice in a row
 - **Retry or reroll** — retry the exact snippet you just typed, or get a fresh random one
 - **Error breakdown** — see exactly which characters you mistype most often
+- **Raw WPM vs. Net WPM** — see both your raw typing speed and your accuracy-adjusted speed side by side
 - **Run history & trend chart** — tracks your last 10 runs and graphs your WPM over time
 - **Custom snippet input** — paste your own code and practice typing that instead
 - **Sound effects** — audio feedback for correct/incorrect keystrokes and test completion (with a mute toggle)
+- **Keyboard shortcuts** — `Enter` to restart from the results screen, `Esc` to cancel the custom-snippet panel
 - **Persistent settings** — remembers your last language, difficulty, and mode across visits
 - **Personal best tracking** — saved locally, with a celebration screen when you beat your record
 - **Fully responsive** — works on desktop and mobile

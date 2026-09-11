@@ -141,6 +141,7 @@ export function useTypingTest({ onCorrectKey, onErrorKey, onFinish } = {}) {
     const incorrectChars = typed.value.length - correctChars
     const minutes = Math.max(elapsedSeconds.value, 1) / 60
     const wpm = Math.round(correctChars / 5 / minutes)
+    const rawWpm = Math.round(correctChars / 5 /  minutes)
     const accuracy = totalKeystrokes.value === 0 ? 100 : Math.round((totalCorrectKeystrokes.value / totalKeystrokes.value) * 100)
 
     let resultType = 'normal'
@@ -159,7 +160,7 @@ export function useTypingTest({ onCorrectKey, onErrorKey, onFinish } = {}) {
     .slice(0, 5)
     .map(([char, count]) => ({ char: formatChar(char), count }))
 
-    result.value = { wpm, accuracy, correctChars, incorrectChars, resultType, errorBreakdown }
+    result.value = { wpm, rawWpm, accuracy, correctChars, incorrectChars, resultType, errorBreakdown }
     onFinish?.()
 
     const historyEntry = { wpm, accuracy, timestamp: Date.now() }
