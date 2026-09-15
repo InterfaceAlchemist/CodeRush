@@ -8,6 +8,7 @@ const props = defineProps({
   typed: { type: String, required: true },
   status: { type: String, required: true }, // idle | running |
   language: { type: String, required: true }, // 'en' | 'es' | 'fr' | 'de' | 'it'
+  isDrillMode: { type: Boolean, default: false }, // Indicates if the test is in weak key drill mode
 });
 
 const emit = defineEmits(["type", "start", "restart", "tab"]);
@@ -21,9 +22,10 @@ const FILE_EXTENSIONS = {
   sql: "sql",
 };
 
-const filename = computed(
-  () => `snippet.${FILE_EXTENSIONS[props.language] || "txt"}`,
-);
+const filename = computed(() => {
+  if (props.isDrillMode) return "practice-drill.txt";
+  return `snippet.${FILE_EXTENSIONS[props.language] || "txt"}`;
+});
 
 const tokenTypes = computed(() => tokenize(props.passageText, props.language));
 

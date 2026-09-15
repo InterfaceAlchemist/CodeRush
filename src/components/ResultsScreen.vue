@@ -10,9 +10,10 @@ import patternConfetti from "../assets/images/pattern-confetti.svg";
 const props = defineProps({
   result: { type: Object, required: true }, // { wpm, accuracy, correctChars, incorrectChars, resultType }
   runHistory: { type: Array, default: () => [] }, // Array of { wpm, accuracy, timestamp }
+  hasWeakKeyData: { type: Boolean, default: false }, // Indicates if weak keys data is available
 });
 
-const emit = defineEmits(["restart", "retry"]);
+const emit = defineEmits(["restart", "retry", "practice-weak-keys"]);
 
 const COPY = {
   normal: {
@@ -164,6 +165,15 @@ const chartPoints = computed(() => {
       @click="emit('retry')"
     >
       Retry This One
+    </button>
+
+    <button
+      v-if="hasWeakKeyData"
+      type="button"
+      class="mt-4 inline-flex items-center justify-center gap-2 rounded-lg border border-neutral-800 px-6 py-3 font-sora font-bold text-neutral-0 transition-colors hover:border-neutral-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-400"
+      @click="emit('practice-weak-keys')"
+    >
+      Practice Weak Keys
     </button>
   </div>
 

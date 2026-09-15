@@ -4,6 +4,7 @@ import snippets from '../data/snippets.json'
 const PB_STORAGE_KEY = 'typingSpeedTest.personalBest'
 const HISTORY_STORAGE_KEY = 'typingSpeedTest.history'
 const SETTINGS_STORAGE_KEY = 'typingSpeedTest.settings'
+const WEAK_KEYS_STORAGE_KEY = 'typingSpeedTest.weakKeys'
 const TIMED_DURATION = 60
 const MAX_HISTORY = 10
 
@@ -15,6 +16,24 @@ function pickPassage(language, difficulty) {
   const choice = candidates[Math.floor(Math.random() * candidates.length)]
   lastPassage = choice
   return choice
+}
+
+function generateDrillPassage(weakKeysData) {
+  const topChars = Object.entries(weakKeysData)
+  .filter(([char]) => char !== ' ' && char !== '\n')
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 5)
+  .map(([char]) => char)
+
+  if (topChars.length === 0) return null
+
+  const words = []
+  for (let i = 0; i < 15; i++) {
+    const char = topChars[Math.floor(Math.random() * topChars.length)]
+    const repeatCount = 2 + Math.floor(Math.random() * 3)
+    words.push(char.repeat(repeatCount))
+  }
+  return words.join(' ')
 }
 
 function loadPersonalBest() {
@@ -35,6 +54,16 @@ function loadSettings() {
     return { ...defaults, ...JSON.parse(raw) }
   } catch {
     return defaults
+  }
+}
+
+function loadWeakKeys() {
+  const raw = localStorage.getItem(WEAK_KEYS_STORAGE_KEY)
+  if (!raw) return {}
+  try {
+    return JSON.parse(raw)
+  } catch {
+    return {}
   }
 }
 
@@ -74,6 +103,12 @@ export function useTypingTest({ onCorrectKey, onErrorKey, onFinish } = {}) {
   const personalBest = ref(loadPersonalBest())
   const runHistory = ref(loadHistory())
   const isCustomSnippet = ref(false) // true if the user has pasted a custom snippet
+  const weakKeys = ref(loadWeakKeys())
+  const isDrillMode = ref(false)
+
+  function saveWeakKeys() {
+    localStorage.setItem(WEAK_KEYS_STORAGE_KEY, JSON.stringify(weakKeys.value))
+  }
 
   const timeLabel = computed(() => {
     if (mode.value === 'timed') {
@@ -94,6 +129,8 @@ export function useTypingTest({ onCorrectKey, onErrorKey, onFinish } = {}) {
     if (totalKeystrokes.value === 0) return 100
     return Math.round((totalCorrectKeystrokes.value / totalKeystrokes.value) * 100)
   })
+
+  const hasWeakKeyData = computed(() => Object.keys(weakKeys.value).length > 0)
 
   function countCorrectChars(typedStr, passage) {
     let count = 0
@@ -141,7 +178,7 @@ export function useTypingTest({ onCorrectKey, onErrorKey, onFinish } = {}) {
     const incorrectChars = typed.value.length - correctChars
     const minutes = Math.max(elapsedSeconds.value, 1) / 60
     const wpm = Math.round(correctChars / 5 / minutes)
-    const rawWpm = Math.round(correctChars / 5 /  minutes)
+    const rawWpm = Math.round(totalKeystrokes.value / 5 /  minutes)
     const accuracy = totalKeystrokes.value === 0 ? 100 : Math.round((totalCorrectKeystrokes.value / totalKeystrokes.value) * 100)
 
     let resultType = 'normal'
@@ -154,6 +191,11 @@ export function useTypingTest({ onCorrectKey, onErrorKey, onFinish } = {}) {
       personalBest.value = wpm
       localStorage.setItem(PB_STORAGE_KEY, String(wpm))
     }
+
+    for (const [char, count] of Object.entries(errorCounts.value)) {
+      weakKeys.value[char] = (weakKeys.value[char] || 0) + count
+    }
+    saveWeakKeys()
 
     const errorBreakdown = Object.entries(errorCounts.value)
     .sort((a, b) => b[1] - a[1])
@@ -205,6 +247,7 @@ export function useTypingTest({ onCorrectKey, onErrorKey, onFinish } = {}) {
   function resetPassage() {
     passageText.value = pickPassage(language.value, difficulty.value)
     isCustomSnippet.value = false
+    isDrillMode.value = false
   }
 
   function setCustomPassage(text, customLanguage) {
@@ -214,6 +257,16 @@ export function useTypingTest({ onCorrectKey, onErrorKey, onFinish } = {}) {
     if (customLanguage) language.value = customLanguage
     passageText.value = trimmed
     isCustomSnippet.value = true
+  }
+
+  function startWeakKeyDrill() {
+    if (status.value !== 'idle') return false
+    const drill = generateDrillPassage(weakKeys.value)
+    if (!drill) return false
+    passageText.value = drill
+    isDrillMode.value = true
+    isCustomSnippet.value = false
+    return true
   }
 
   function restart({ keepPassage = false } = {}) {
@@ -282,6 +335,12 @@ export function useTypingTest({ onCorrectKey, onErrorKey, onFinish } = {}) {
     liveAccuracy,
     setCustomPassage,
     isCustomSnippet,
+    weakKeys,
+    hasWeakKeyData,
+    isDrillMode,
+    startWeakKeyDrill,
+    soundEnabled,
+    toggleSound,
     handleTyping,
     handleTab,
     startTest,

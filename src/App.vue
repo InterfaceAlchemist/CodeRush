@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onBeforeMount } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useTypingTest } from "./composables/useTypingTest";
 import AppHeader from "./components/AppHeader.vue";
 import ControlsBar from "./components/ControlsBar.vue";
@@ -34,6 +34,10 @@ const {
   setDifficulty,
   setMode,
   setCustomPassage,
+  isCustomSnippet,
+  isDrillMode,
+  hasWeakKeyData,
+  startWeakKeyDrill,
 } = useTypingTest({
   onCorrectKey: () => soundEnabled.value && playCorrect(),
   onErrorKey: () => soundEnabled.value && playError(),
@@ -51,6 +55,11 @@ function handleRetry() {
   restart({ keepPassage: true }); // Pass true to keep the same passage
 }
 
+function handlePracticeWeakKeys() {
+  restart();
+  startWeakKeyDrill();
+}
+
 function handleOpenCustom() {
   showCustomInput.value = true;
 }
@@ -65,7 +74,7 @@ function handleCancelCustom() {
 }
 
 function handleGlobalKeydown(e) {
-  const isButtonFocused = e.target.tagname === "BUTTON";
+  const isButtonFocused = e.target.tagName === "BUTTON";
 
   if (showCustomInput.value && e.key === "Escape") {
     handleCancelCustom();
@@ -78,7 +87,9 @@ function handleGlobalKeydown(e) {
 }
 
 onMounted(() => window.addEventListener("keydown", handleGlobalKeydown));
-onBeforeMount(() => window.removeEventListener("keydown", handleGlobalKeydown));
+onBeforeUnmount(() =>
+  window.removeEventListener("keydown", handleGlobalKeydown),
+);
 </script>
 
 <template>
@@ -123,6 +134,7 @@ onBeforeMount(() => window.removeEventListener("keydown", handleGlobalKeydown));
           :typed="typed"
           :status="status"
           :language="language"
+          :is-drill-mode="isDrillMode"
           @type="handleTyping"
           @tab="handleTab"
           @start="startTest"
@@ -133,9 +145,11 @@ onBeforeMount(() => window.removeEventListener("keydown", handleGlobalKeydown));
       <ResultsScreen
         v-else
         :result="result"
-        :run-History="runHistory"
+        :run-history="runHistory"
+        :has-weak-key-data="hasWeakKeyData"
         @restart="handleRestart"
         @retry="handleRetry"
+        @practice-weak-keys="handlePracticeWeakKeys"
       />
     </main>
 
