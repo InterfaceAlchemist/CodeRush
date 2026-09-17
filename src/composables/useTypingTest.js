@@ -5,6 +5,7 @@ const PB_STORAGE_KEY = 'typingSpeedTest.personalBest'
 const HISTORY_STORAGE_KEY = 'typingSpeedTest.history'
 const SETTINGS_STORAGE_KEY = 'typingSpeedTest.settings'
 const WEAK_KEYS_STORAGE_KEY = 'typingSpeedTest.weakKeys'
+const BADGES_STORAGE_KEY = 'typingSpeedTest.badges'
 const TIMED_DURATION = 60
 const MAX_HISTORY = 10
 
@@ -67,6 +68,44 @@ function loadWeakKeys() {
   }
 }
 
+function loadBadgeState() {
+  const defaults = { unlocked: {}, totalTestCompleted: 0, languagesCompleted: {} }
+  const raw = localStorage.getItem(BADGES_STORAGE_KEY)
+  if (!raw) return defaults
+  try {
+    return { ...defaults, ...JSON.parse(raw) }
+  } catch {
+    return defaults
+  }
+}
+
+const BADGE_DEFINITIONS = [
+  {
+    id: 'speedDemon',
+    label: 'Speed Demon',
+    description: 'Achieve a WPM of 100 or more in a single test.',
+    check: (ctx) => ctx.wpm >= 100,
+  },
+    {
+    id: 'perfectionist',
+    label: 'Perfectionist',
+    description: 'Complete a test at 100% accuracy.',
+    check: (ctx) => ctx.accuracy === 100,
+  },
+    {
+    id: 'marathon',
+    label: 'Marathon',
+    description: 'Complete 10 tests.',
+    check: (ctx) => ctx.totalTestsCompleted >= 10,
+  },
+    {
+    id: 'polyglot',
+    label: 'Polyglot',
+    description: 'Complete a test in JavaScript, PHP, and SQL.',
+    check: (ctx) => Object.keys(ctx.languagesCompleted).length >= 3,
+  },
+]
+
 
 export function useTypingTest({ onCorrectKey, onErrorKey, onFinish } = {}) {
   // ----- settings -----
@@ -105,9 +144,14 @@ export function useTypingTest({ onCorrectKey, onErrorKey, onFinish } = {}) {
   const isCustomSnippet = ref(false) // true if the user has pasted a custom snippet
   const weakKeys = ref(loadWeakKeys())
   const isDrillMode = ref(false)
+  const badgeState = ref(loadBadgeState())
 
   function saveWeakKeys() {
     localStorage.setItem(WEAK_KEYS_STORAGE_KEY, JSON.stringify(weakKeys.value))
+  }
+
+  function saveBadgeState() {
+    localStorage.setItem(BADGES_STORAGE_KEY, JSON.stringify(badgeState.value))
   }
 
   const timeLabel = computed(() => {
@@ -131,6 +175,10 @@ export function useTypingTest({ onCorrectKey, onErrorKey, onFinish } = {}) {
   })
 
   const hasWeakKeyData = computed(() => Object.keys(weakKeys.value).length > 0)
+
+  const allBadgesWithStatus = computed(() => 
+    BADGE_DEFINITIONS.map((b) => ({ ...b, unlocked: !!badgeState.value.unlocked[b.id] }))
+  )
 
   function countCorrectChars(typedStr, passage) {
     let count = 0
@@ -197,12 +245,32 @@ export function useTypingTest({ onCorrectKey, onErrorKey, onFinish } = {}) {
     }
     saveWeakKeys()
 
+    badgeState.value.totalTestCompleted++
+    badgeState.value.languagesCompleted[language.value] = true
+
+    const badgeContext = {
+      wpm,
+      accuracy,
+      totalTestsCompleted: badgeState.value.totalTestsCompleted,
+      languagesCompleted: badgeState.value.languagesCompleted,
+    }
+
+    const newlyUnlockedBadges = []
+    for (const badge of BADGE_DEFINITIONS) {
+      const alreadyUnlocked = badgeState.value.unlocked[badge.id]
+      if (!alreadyUnlocked && badge.check(badgeContext)) {
+        badgeState.value.unlocked[badge.id] = true
+        newlyUnlockedBadges.push(badge)
+      }
+    }
+    saveBadgeState()
+
     const errorBreakdown = Object.entries(errorCounts.value)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
     .map(([char, count]) => ({ char: formatChar(char), count }))
 
-    result.value = { wpm, rawWpm, accuracy, correctChars, incorrectChars, resultType, errorBreakdown }
+    result.value = { wpm, rawWpm, accuracy, correctChars, incorrectChars, resultType, errorBreakdown, newlyUnlockedBadges }
     onFinish?.()
 
     const historyEntry = { wpm, accuracy, timestamp: Date.now() }
@@ -339,6 +407,7 @@ export function useTypingTest({ onCorrectKey, onErrorKey, onFinish } = {}) {
     hasWeakKeyData,
     isDrillMode,
     startWeakKeyDrill,
+    allBadgesWithStatus,
     soundEnabled,
     toggleSound,
     handleTyping,

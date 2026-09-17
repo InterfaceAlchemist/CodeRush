@@ -11,6 +11,7 @@ const props = defineProps({
   result: { type: Object, required: true }, // { wpm, accuracy, correctChars, incorrectChars, resultType }
   runHistory: { type: Array, default: () => [] }, // Array of { wpm, accuracy, timestamp }
   hasWeakKeyData: { type: Boolean, default: false }, // Indicates if weak keys data is available
+  allBadges: { type: Array, default: () => [] }, // Array of badge objects with unlocked status
 });
 
 const emit = defineEmits(["restart", "retry", "practice-weak-keys"]);
@@ -133,6 +134,32 @@ const chartPoints = computed(() => {
         >
           {{ item.char }} <span class="text-red-500">×{{ item.count }}</span>
         </span>
+      </div>
+    </div>
+
+    <div
+      v-if="result.newlyUnlockedBadges?.lenght"
+      class="mt-6 flex flex-col items-center gap-2"
+    >
+      <p class="text-sm font-bold text-yellow-400">🏆 New Badge Unlocked!</p>
+      <p class="text-neutral-0">
+        {{ result.newlyUnlockedBadges.map((b) => b.label).join(", ") }}
+      </p>
+    </div>
+
+    <div class="mt-6 flex flex-wrap justify-center gap-2">
+      <div
+        v-for="badge in allBadges"
+        :key="badge.id"
+        class="rounded-full border px-3 py-1 text-sm font-semibold"
+        :class="
+          badge.unlocked
+            ? 'border-yellow-400 text-yellow-400'
+            : 'border-neutral-800 text-neutral-600'
+        "
+        :title="badge.description"
+      >
+        {{ badge.label }}
       </div>
     </div>
 

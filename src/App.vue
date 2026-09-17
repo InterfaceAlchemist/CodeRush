@@ -38,6 +38,7 @@ const {
   isDrillMode,
   hasWeakKeyData,
   startWeakKeyDrill,
+  allBadgesWithStatus,
 } = useTypingTest({
   onCorrectKey: () => soundEnabled.value && playCorrect(),
   onErrorKey: () => soundEnabled.value && playError(),
@@ -147,6 +148,7 @@ onBeforeUnmount(() =>
         :result="result"
         :run-history="runHistory"
         :has-weak-key-data="hasWeakKeyData"
+        :all-badges="allBadgesWithStatus"
         @restart="handleRestart"
         @retry="handleRetry"
         @practice-weak-keys="handlePracticeWeakKeys"
