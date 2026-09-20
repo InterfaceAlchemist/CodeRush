@@ -12,6 +12,7 @@ const passageComponent = ref(null);
 const { playCorrect, playError, playFinish } = useSounds();
 const soundEnabled = ref(true);
 const showCustomInput = ref(false);
+const focusMode = ref(false);
 
 const {
   language,
@@ -44,6 +45,10 @@ const {
   onErrorKey: () => soundEnabled.value && playError(),
   onFinish: () => soundEnabled.value && playFinish(),
 });
+
+function toggleFocusMode() {
+  focusMode.value = !focusMode.value;
+}
 
 function toggleSound() {
   soundEnabled.value = !soundEnabled.value;
@@ -98,6 +103,7 @@ onBeforeUnmount(() =>
     class="mx-auto flex min-h-screen max-w-5xl flex-col gap-10 px-4 py-8 sm:px-6 sm:py-12"
   >
     <AppHeader
+      v-if="!(focusMode && status === 'running')"
       :personal-best="personalBest"
       :sound-enabled="soundEnabled"
       @toggle-sound="toggleSound"
@@ -106,7 +112,7 @@ onBeforeUnmount(() =>
     <main class="flex flex-1 flex-col">
       <template v-if="status !== 'finished'">
         <ControlsBar
-          v-if="!showCustomInput"
+          v-if="!showCustomInput && !(focusMode && status === 'running')"
           :wpm="liveWpm"
           :accuracy="liveAccuracy"
           :time-label="timeLabel"
@@ -136,10 +142,12 @@ onBeforeUnmount(() =>
           :status="status"
           :language="language"
           :is-drill-mode="isDrillMode"
+          :focus-mode="focusMode"
           @type="handleTyping"
           @tab="handleTab"
           @start="startTest"
           @restart="handleRestart"
+          @toggle-focus-mode="toggleFocusMode"
         />
       </template>
 

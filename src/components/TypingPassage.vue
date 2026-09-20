@@ -3,15 +3,24 @@ import { ref, computed, watch, nextTick } from "vue";
 import iconRestart from "../assets/images/icon-restart.svg";
 import { tokenize } from "../utils/tokenizer";
 
+const isHoveringFocusButton = ref(false);
+
 const props = defineProps({
   passageText: { type: String, required: true },
   typed: { type: String, required: true },
   status: { type: String, required: true }, // idle | running |
   language: { type: String, required: true }, // 'en' | 'es' | 'fr' | 'de' | 'it'
   isDrillMode: { type: Boolean, default: false }, // Indicates if the test is in weak key drill mode
+  focusMode: { type: Boolean, default: false }, // Indicates if the test is in focus mode
 });
 
-const emit = defineEmits(["type", "start", "restart", "tab"]);
+const emit = defineEmits([
+  "type",
+  "start",
+  "restart",
+  "tab",
+  "toggle-focus-mode",
+]);
 
 const inputEl = ref(null);
 const passageRef = ref(null);
@@ -224,5 +233,23 @@ defineExpose({ focusInput });
         <img :src="iconRestart" alt="" class="h-4 w-4" />
       </button>
     </div>
+
+    <!-- focus mode toggle -->
+    <button
+      type="button"
+      class="flex items-center mt-10 gap-2 rounded-lg border px-4 py-2 text-sm font-semibold transition-colors"
+      :class="
+        focusMode
+          ? 'border-yellow-400 text-yellow-400 hover:border-neutral-500 hover:text-neutral-800 hover:bg-white'
+          : 'border-neutral-800 text-neutral-400 hover:border-neutral-500 hover:text-neutral-0'
+      "
+      @mouseenter="isHoveringFocusButton = true"
+      @mouseleave="isHoveringFocusButton = false"
+      @click="emit('toggle-focus-mode')"
+    >
+      {{
+        focusMode && isHoveringFocusButton ? "Exit Focus Mode" : "Focus Mode"
+      }}
+    </button>
   </div>
 </template>
