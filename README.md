@@ -25,6 +25,7 @@ Originally based on the [Frontend Mentor "Typing Speed Test" challenge](https://
 - **Sound effects** — audio feedback for correct/incorrect keystrokes and test completion (with a mute toggle)
 - **Keyboard shortcuts** — `Enter` to restart from the results screen, `Esc` to cancel the custom-snippet panel
 - **Persistent settings** — remembers your last language, difficulty, and mode across visits
+- **Achievement badges** — unlock milestones like Speed Demon (100+ WPM), Perfectionist (100% accuracy), Marathon (10 tests), and Polyglot (a test in every language)
 - **Personal best tracking** — saved locally, with a celebration screen when you beat your record
 - **Fully responsive** — works on desktop and mobile
 
