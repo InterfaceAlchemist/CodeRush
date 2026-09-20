@@ -13,6 +13,7 @@ Originally based on the [Frontend Mentor "Typing Speed Test" challenge](https://
 - **Multi-language snippets** — JavaScript, PHP, and SQL, each with Easy/Medium/Hard difficulty tiers
 - **Syntax highlighting** — keywords, strings, and numbers are color-coded before you even start typing
 - **Code-editor UI** — macOS-style window chrome, line numbers, and monospace styling
+- **Focus mode** — hides the header and controls while you're actively typing, leaving just the code window on screen
 - **Smart Tab indentation** — pressing Tab fills in the exact indentation the snippet needs, no matter if it's 2-space or 4-space style
 - **Two test modes** — 60-second timed mode, or untimed passage mode (finish at your own pace)
 - **No-repeat randomization** — won't show you the same snippet twice in a row
